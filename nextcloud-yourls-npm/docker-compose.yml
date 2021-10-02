@@ -1,0 +1,106 @@
+version: '3'
+
+volumes:
+  nextcloud-data:
+  nextcloud-db:
+  npm-data:
+  npm-ssl:
+    external: true
+  npm-db:
+
+networks:
+  nextcloud:
+  yourls:
+  npm:
+
+services:
+  nextcloud-app:
+    container_name: nextcloud-app
+    image: nextcloud
+    restart: always
+    links:
+      - nextcloud-db
+    volumes:
+      - nextcloud-data:/var/www/html/data
+    environment:
+      - MYSQL_PASSWORD=REPLACE_PASSWORD
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=nextcloud-db
+    networks:
+      - nextcloud
+
+  nextcloud-db:
+    container_name: nextcloud-db
+    image: mariadb:10.5
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    volumes:
+      - nextcloud-db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=REPLACE_PASSWORD
+      - MYSQL_PASSWORD=REPLACE_PASSWORD
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+    networks:
+      - nextcloud
+
+  npm-app:
+    container_name: npm-app
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    environment:
+      DB_MYSQL_HOST: npm-db
+      DB_MYSQL_PORT: 3306
+      DB_MYSQL_USER: npm
+      DB_MYSQL_PASSWORD: REPLACE_PASSWORD
+      DB_MYSQL_NAME: npm
+    volumes:
+      - npm-data:/data
+      - npm-ssl:/etc/letsencrypt
+    networks:
+      - nextcloud
+      - yourls
+      - npm
+
+  npm-db:
+    container_name: npm-db
+    image: 'jc21/mariadb-aria:latest'
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: REPLACE_PASSWORD
+      MYSQL_DATABASE: npm
+      MYSQL_USER: npm
+      MYSQL_PASSWORD: REPLACE_PASSWORD
+    volumes:
+      - npm-db:/var/lib/mysql
+    networks:
+      - npm
+
+  yourls-app:
+    container_name: yourls-app
+    hostname: example.com
+    image: yourls
+    restart: always
+    environment:
+      YOURLS_DB_HOST: yourls-db
+      YOURLS_DB_PASS: REPLACE_PASSWORD
+      YOURLS_SITE: https://example.com
+      YOURLS_USER: REPLACE_PASSWORD
+      YOURLS_PASS: REPLACE_PASSWORD
+    networks:
+      - yourls
+
+  yourls-db:
+    container_name: yourls-db
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: REPLACE_PASSWORD
+      MYSQL_DATABASE: yourls
+    networks:
+      - yourls

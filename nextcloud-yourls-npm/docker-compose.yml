@@ -79,7 +79,7 @@ services:
     networks:
       - npm
 
-nextcloud-app:
+  nextcloud-app:
     container_name: nextcloud-app
     image: nextcloud
     restart: always
@@ -96,7 +96,6 @@ nextcloud-app:
     depends_on:
       - nextcloud-db
       - npm-app
-
 
   nextcloud-db:
     container_name: nextcloud-db

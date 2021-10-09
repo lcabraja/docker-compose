@@ -6,7 +6,7 @@ volumes:
   npm-ssl:
     external: true
   npm-db:
-  nextcloud-config:
+  nextcloud-app:
   nextcloud-data:
     external: true
   nextcloud-db:
@@ -84,7 +84,7 @@ services:
     image: nextcloud
     restart: always
     volumes:
-      - nextcloud-config:/var/www/html/config
+      - nextcloud-app:/var/www/html
       - nextcloud-data:/var/www/html/data
     environment:
       - MYSQL_PASSWORD=$NEXTCLOUD_DATABASE_PASSWORD

@@ -1,12 +1,17 @@
-version: '3'
+version: '3.9'
 
 volumes:
-  nextcloud-data:
-  nextcloud-db:
+  tailscale-data:
   npm-data:
   npm-ssl:
     external: true
   npm-db:
+  nextcloud-config:
+  nextcloud-data:
+    external: true
+  nextcloud-db:
+  yourls-conf:
+  yourls-db:
 
 networks:
   nextcloud:
@@ -14,36 +19,25 @@ networks:
   npm:
 
 services:
-  nextcloud-app:
-    container_name: nextcloud-app
-    image: nextcloud
-    restart: always
-    links:
-      - nextcloud-db
+  tailscale:
+    container_name: tailscale
+    hostname: $HOSTNAME
+      # This will become the tailscale device name
+    image: richnorth/tailscale:v0.99.1
     volumes:
-      - nextcloud-data:/var/www/html/data
-    environment:
-      - MYSQL_PASSWORD=REPLACE_PASSWORD
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=nextcloud
-      - MYSQL_HOST=nextcloud-db
+        - tailscale-data:/var/lib
+          # State data will be stored in this directory
+        - /dev/net/tun:/dev/net/tun
+          # Required for tailscale to work
+    cap_add:                                    
+      # Required for tailscale to work
+      - net_admin
+      - sys_module
+    command: tailscaled 
     networks:
       - nextcloud
-
-  nextcloud-db:
-    container_name: nextcloud-db
-    image: mariadb:10.5
-    restart: always
-    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
-    volumes:
-      - nextcloud-db:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=REPLACE_PASSWORD
-      - MYSQL_PASSWORD=REPLACE_PASSWORD
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=nextcloud
-    networks:
-      - nextcloud
+      - yourls
+      - npm
 
   npm-app:
     container_name: npm-app
@@ -51,16 +45,16 @@ services:
     restart: unless-stopped
     ports:
       - '80:80'
-      - '81:81'
+      # - '81:81'
       # access through ssh tunnel while configurating
       # remove port 81 when done with configuration
       - '443:443'
     environment:
+      DB_MYSQL_PASSWORD: $NPM_DATABASE_PASSWORD
+      DB_MYSQL_NAME: npm
+      DB_MYSQL_USER: npm
       DB_MYSQL_HOST: npm-db
       DB_MYSQL_PORT: 3306
-      DB_MYSQL_USER: npm
-      DB_MYSQL_PASSWORD: REPLACE_PASSWORD
-      DB_MYSQL_NAME: npm
     volumes:
       - npm-data:/data
       - npm-ssl:/etc/letsencrypt
@@ -68,6 +62,8 @@ services:
       - nextcloud
       - yourls
       - npm
+    depends_on:
+      - npm-db
 
   npm-db:
     container_name: npm-db
@@ -83,26 +79,67 @@ services:
     networks:
       - npm
 
+nextcloud-app:
+    container_name: nextcloud-app
+    image: nextcloud
+    restart: always
+    volumes:
+      - nextcloud-config:/var/www/html/config
+      - nextcloud-data:/var/www/html/data
+    environment:
+      - MYSQL_PASSWORD=$NEXTCLOUD_DATABASE_PASSWORD
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=nextcloud-db
+    networks:
+      - nextcloud
+    depends_on:
+      - nextcloud-db
+      - npm-app
+
+
+  nextcloud-db:
+    container_name: nextcloud-db
+    image: mariadb:10.5
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    volumes:
+      - nextcloud-db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=$NEXTCLOUD_DATABASE_ROOT_PASSWORD
+      - MYSQL_PASSWORD=$NEXTCLOUD_DATABASE_PASSWORD
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+    networks:
+      - nextcloud
+  
   yourls-app:
     container_name: yourls-app
-    hostname: example.com
+    hostname: $YOURLS_HOSTNAME
     image: yourls
     restart: always
+    volumes:
+      - yourls-data:/var/www/html/user
     environment:
+      YOURLS_SITE: https://$YOURLS_HOSTNAME
+      YOURLS_USER: $YOURLS_ADMIN_USERNAME
+      YOURLS_PASS: $YOURLS_ADMIN_PASSWORD
+      YOURLS_DB_PASS: $YOURLS_DATABASE_PASSWORD
       YOURLS_DB_HOST: yourls-db
-      YOURLS_DB_PASS: REPLACE_PASSWORD
-      YOURLS_SITE: https://example.com
-      YOURLS_USER: REPLACE_PASSWORD
-      YOURLS_PASS: REPLACE_PASSWORD
     networks:
       - yourls
+    depends_on:
+      - yourls-db
+      - npm-app
 
   yourls-db:
     container_name: yourls-db
     image: mysql
     restart: always
+    volumes:
+      - yourls-db:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: REPLACE_PASSWORD
+      MYSQL_ROOT_PASSWORD: $YOURLS_DATABASE_PASSWORD
       MYSQL_DATABASE: yourls
     networks:
       - yourls

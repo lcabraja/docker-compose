@@ -1,0 +1,5 @@
+version: '3.9'
+services:
+  npm-app:
+    ports:
+      - '81:81'

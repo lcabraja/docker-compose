@@ -70,10 +70,10 @@ services:
     image: 'jc21/mariadb-aria:latest'
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: REPLACE_PASSWORD
+      MYSQL_ROOT_PASSWORD: $NPM_DATABASE_ROOT_PASSWORD
       MYSQL_DATABASE: npm
       MYSQL_USER: npm
-      MYSQL_PASSWORD: REPLACE_PASSWORD
+      MYSQL_PASSWORD: $NPM_DATABASE_PASSWORD
     volumes:
       - npm-db:/var/lib/mysql
     networks:
@@ -118,7 +118,7 @@ services:
     image: yourls
     restart: always
     volumes:
-      - yourls-data:/var/www/html/user
+      - yourls-conf:/var/www/html/user
     environment:
       YOURLS_SITE: https://$YOURLS_HOSTNAME
       YOURLS_USER: $YOURLS_ADMIN_USERNAME

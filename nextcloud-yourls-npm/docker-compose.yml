@@ -21,7 +21,6 @@ networks:
 services:
   tailscale:
     container_name: tailscale
-    hostname: $HOSTNAME
       # This will become the tailscale device name
     image: richnorth/tailscale:v0.99.1
     volumes:

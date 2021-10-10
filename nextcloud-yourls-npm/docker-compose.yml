@@ -34,18 +34,15 @@ services:
       - net_admin
       - sys_module
     command: tailscaled 
-    ports:
-      - '80:80'
-      - '443:443'
-    networks:
-      - nextcloud
-      - yourls
-      - npm
+    network_mode: service:npm-app
 
   npm-app:
     container_name: npm-app
     image: 'jc21/nginx-proxy-manager:latest'
     restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
     environment:
       DB_MYSQL_PASSWORD: $NPM_DATABASE_PASSWORD
       DB_MYSQL_NAME: npm
@@ -55,7 +52,10 @@ services:
     volumes:
       - npm-data:/data
       - npm-ssl:/etc/letsencrypt
-    network_mode: service:tailscale
+    networks:
+      - nextcloud
+      - yourls
+      - npm
     depends_on:
       - npm-db
 

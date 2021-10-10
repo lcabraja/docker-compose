@@ -58,10 +58,6 @@ services:
     volumes:
       - npm-data:/data
       - npm-ssl:/etc/letsencrypt
-    networks:
-      - nextcloud
-      - yourls
-      - npm
     network_mode: service:tailscale
     depends_on:
       - npm-db

@@ -45,9 +45,6 @@ services:
     restart: unless-stopped
     ports:
       - '80:80'
-      # - '81:81'
-      # access through ssh tunnel while configurating
-      # remove port 81 when done with configuration
       - '443:443'
     environment:
       DB_MYSQL_PASSWORD: $NPM_DATABASE_PASSWORD

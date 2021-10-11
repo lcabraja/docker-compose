@@ -17,12 +17,15 @@ networks:
   nextcloud:
   yourls:
   npm:
+    external: true
+    name: npm
 
 services:
   tailscale:
     container_name: tailscale
       # This will become the tailscale device name
     image: richnorth/tailscale:v0.99.1
+    command: tailscale up --advertise-routes=172.27.0.2/16
     volumes:
         - tailscale-data:/var/lib
           # State data will be stored in this directory
@@ -32,8 +35,8 @@ services:
       # Required for tailscale to work
       - net_admin
       - sys_module
-    command: tailscaled 
-    network_mode: service:npm-app
+    networks:
+      - npm
 
   npm-app:
     container_name: npm-app

@@ -9,6 +9,17 @@ networks:
     external: true
 
 services:
+  portainer:
+    container_name: portainer
+    hostname: portainer
+    image: portainer/portainer-ce:latest
+    restart: always
+    volumes:
+      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - vpn
+
   tailscale:
     container_name: tailscale
     hostname: tailscale
@@ -23,16 +34,7 @@ services:
       # Required for tailscale to work
       - net_admin
       - sys_module
-    command: tailscaled 
-    network_mode: service:npm-app
-
-  portainer:
-    container_name: portainer
-    hostname: portainer
-    image: portainer/portainer-ce:latest
-    restart: always
-    volumes:
-      - portainer_data:/data
-      - /var/run/docker.sock:/var/run/docker.sock
+    command: "sh -c tailsacle up --advertise-routes=10.42.0.0/16; tailscaled"
     networks:
       - vpn
+

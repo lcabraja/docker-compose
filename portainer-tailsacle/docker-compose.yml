@@ -1,0 +1,38 @@
+version: '3.3'
+
+volumes:
+  tailscale_data:
+  portainer_data:
+
+networks:
+  vpn:
+    external: true
+
+services:
+  tailscale:
+    container_name: tailscale
+    hostname: tailscale
+      # This will become the tailscale device name
+    image: richnorth/tailscale:v0.99.1
+    volumes:
+        - tailscale-data:/var/lib
+          # State data will be stored in this directory
+        - /dev/net/tun:/dev/net/tun
+          # Required for tailscale to work
+    cap_add:                                    
+      # Required for tailscale to work
+      - net_admin
+      - sys_module
+    command: tailscaled 
+    network_mode: service:npm-app
+
+  portainer:
+    container_name: portainer
+    hostname: portainer
+    image: portainer/portainer-ce:latest
+    restart: always
+    volumes:
+      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - vpn

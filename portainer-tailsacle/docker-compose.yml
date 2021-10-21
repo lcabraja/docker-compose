@@ -34,7 +34,7 @@ services:
       # Required for tailscale to work
       - net_admin
       - sys_module
-    command: "sh -c tailsacle up --advertise-routes=10.42.0.0/16; tailscaled"
+    command: tailscaled
     networks:
       - vpn
 

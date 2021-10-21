@@ -1,8 +1,8 @@
 version: '3.3'
 
 volumes:
-  tailscale_data:
-  portainer_data:
+  tailscale-data:
+  portainer-data:
 
 networks:
   vpn:
@@ -15,7 +15,7 @@ services:
     image: portainer/portainer-ce:latest
     restart: always
     volumes:
-      - portainer_data:/data
+      - portainer-data:/data
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - vpn

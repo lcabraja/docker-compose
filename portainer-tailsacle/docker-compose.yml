@@ -11,7 +11,7 @@ networks:
 services:
   portainer:
     container_name: portainer
-    hostname: portainer
+    hostname: lcabraja
     image: portainer/portainer-ce:latest
     restart: always
     volumes:

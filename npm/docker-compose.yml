@@ -11,6 +11,7 @@ networks:
     external: true
   npm:
     external: true
+  npm-internal:
 
 services:
   npm-app:
@@ -30,8 +31,9 @@ services:
       - npm-data:/data
       - npm-ssl:/etc/letsencrypt
     networks:
-      - npm
       - vpn
+      - npm
+      - npm-internal
     depends_on:
       - npm-db
 
@@ -47,4 +49,4 @@ services:
     volumes:
       - npm-db:/var/lib/mysql
     networks:
-      - npm
+      - npm-internal

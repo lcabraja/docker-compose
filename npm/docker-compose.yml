@@ -1,0 +1,50 @@
+version: '3.3'
+
+volumes:
+  npm-data:
+  npm-ssl:
+    external: true
+  npm-db:
+
+networks:
+  vpn:
+    external: true
+  npm:
+    external: true
+
+services:
+  npm-app:
+    container_name: npm-app
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      DB_MYSQL_PASSWORD: npm # TODO: Build owen docker images integrated with doppler
+      DB_MYSQL_NAME: npm
+      DB_MYSQL_USER: npm
+      DB_MYSQL_HOST: npm-db
+      DB_MYSQL_PORT: 3306
+    volumes:
+      - npm-data:/data
+      - npm-ssl:/etc/letsencrypt
+    networks:
+      - npm
+      - vpn
+    depends_on:
+      - npm-db
+
+  npm-db:
+    container_name: npm-db
+    image: 'jc21/mariadb-aria:latest'
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: npm # TODO: Build owen docker images integrated with doppler
+      MYSQL_DATABASE: npm
+      MYSQL_USER: npm
+      MYSQL_PASSWORD: npm # TODO: Build owen docker images integrated with doppler
+    volumes:
+      - npm-db:/var/lib/mysql
+    networks:
+      - npm

@@ -22,7 +22,7 @@ services:
       - '80:80'
       - '443:443'
     environment:
-      DB_MYSQL_PASSWORD: npm # TODO: Build owen docker images integrated with doppler
+      DB_MYSQL_PASSWORD: npm # TODO: Build own docker images integrated with doppler
       DB_MYSQL_NAME: npm
       DB_MYSQL_USER: npm
       DB_MYSQL_HOST: npm-db
@@ -42,10 +42,10 @@ services:
     image: 'jc21/mariadb-aria:latest'
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: npm # TODO: Build owen docker images integrated with doppler
+      MYSQL_ROOT_PASSWORD: npm # TODO: Build own docker images integrated with doppler
       MYSQL_DATABASE: npm
       MYSQL_USER: npm
-      MYSQL_PASSWORD: npm # TODO: Build owen docker images integrated with doppler
+      MYSQL_PASSWORD: npm # TODO: Build own docker images integrated with doppler
     volumes:
       - npm-db:/var/lib/mysql
     networks:
